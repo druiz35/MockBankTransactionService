@@ -1,4 +1,4 @@
-package com.druiz.banktransactionapi.dto;
+package com.druiz.mockbanktransactionservice.dto;
 
 
 import lombok.Getter;
