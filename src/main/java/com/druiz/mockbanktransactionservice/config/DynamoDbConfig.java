@@ -1,43 +1,32 @@
 package com.druiz.mockbanktransactionservice.config;
 
+import com.druiz.mockbanktransactionservice.model.Transaction;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+
 
 @Configuration
 public class DynamoDbConfig {
-
-    @Value("${aws.accessKeyId}")
-    private String accessKey;
-
-    @Value("${aws.secretAccessKey}")
-    private String secretKey;
-
-    @Value("${aws.region:us-east-1}")
-    private String awsRegion;
-
-
     @Bean
     public DynamoDbClient dynamoDbClient() {
-        return DynamoDbClient.builder()
-                .region(Region.of(awsRegion))
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)
-                        )
-                )
-                .build();
+        return DynamoDbClient.builder().build();
     }
 
     @Bean
     public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
-        return DynamoDbEnhancedClient.builder()
-                .dynamoDbClient(dynamoDbClient)
-                .build();
+        return DynamoDbEnhancedClient.builder().dynamoDbClient(dynamoDbClient).build();
+    }
+
+    @Bean
+    public DynamoDbTable<Transaction> transactionDynamoDbTable(DynamoDbEnhancedClient dynamoDbEnhancedClient, @Value("${dynamodb.tableName:transactions}") String tableName) {
+        return dynamoDbEnhancedClient.table(
+                tableName,
+                TableSchema.fromBean(Transaction.class)
+        );
     }
 }
